@@ -11,24 +11,29 @@ const HomePage = () => {
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(false);
-  useEffect(()=>{
-    try{
-      setLoading(true);
-      const fetchNotes = async () => {
-        const response = await api.get('/notes');
-        setNotes(response.data);
-      };
-    }catch(error){
-      console.error('Error fetching notes:', error);
-      if(error.response && error.response.status === 429){
-        setIsRateLimited(true);
-      }else{
-        toast.error('Error fetching notes');
+useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const res = await api.get("/notes");
+        console.log(res.data);
+        setNotes(res.data);
+        setIsRateLimited(false);
+      } catch (error) {
+        console.log("Error fetching notes");
+        console.log(error.response);
+        if (error.response?.status === 429) {
+          setIsRateLimited(true);
+        } else {
+          toast.error("Failed to load notes");
+        }
+      } finally {
+        setLoading(false);
       }
-    }finally{
-      setLoading(false);
-    }
-  },[]);
+    };
+
+    fetchNotes();
+  }, []);
+
   return (
     <div className="min-h-screen ">
       <Navbar />
