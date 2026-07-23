@@ -107,7 +107,7 @@ const NoteDetailPage = () => {
                 </label>
                 <textarea
                   placeholder="Write your note here..."
-                  className="textarea textarea-bordered h-32"
+                  className="textarea textarea-bordered h-64"
                   value={note.content}
                   onChange={(e) => setNote({ ...note, content: e.target.value })}
                 />
