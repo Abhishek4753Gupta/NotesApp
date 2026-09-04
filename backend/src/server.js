@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 import noteRoutes from './routes/noteRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import { connectDB } from './config/db.js';
 import rateLimiterMiddleware from './middleware/rateLimiter.js';  
 
@@ -15,6 +16,7 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use(rateLimiterMiddleware); // Apply rate limiting middleware to all routes
+app.use('/api/auth', authRoutes);
 app.use('/api/notes',noteRoutes);
 
 app.listen(PORT, () => {

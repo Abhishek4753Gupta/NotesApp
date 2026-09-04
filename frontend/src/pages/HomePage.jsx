@@ -1,8 +1,8 @@
-import React from 'react'
+
 import Navbar from '../Components/NavBar'
 import {useState,useEffect} from 'react'
 import toast from 'react-hot-toast'
-import axios from 'axios'
+
 import api from '../lib/axios'
 import RateLimitedUI from '../Components/RateLimitedUI'
 import NoteCard from '../Components/NoteCard'
@@ -11,27 +11,34 @@ const HomePage = () => {
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(false);
-useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const res = await api.get("/notes");
-        setNotes(res.data);
-        setIsRateLimited(false);
-      } catch (error) {
-        console.log("Error fetching notes");
-        console.log(error.response);
-        if (error.response?.status === 429) {
-          setIsRateLimited(true);
-        } else {
-          toast.error("Failed to load notes");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  useEffect(() => {
+  const fetchNotes = async () => {
+    try {
+      setLoading(true);
 
-    fetchNotes();
-  }, []);
+      const res = await api.get(`/notes?page=${page}&limit=3`);
+
+      setNotes(res.data.notes);
+      setTotalPages(res.data.totalPages);
+      setIsRateLimited(false);
+
+    } catch (error) {
+      console.log("Error fetching notes");
+
+      if (error.response?.status === 429) {
+        setIsRateLimited(true);
+      } else {
+        toast.error("Failed to load notes");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchNotes();
+}, [page]);
 
   return (
     <div className="min-h-screen ">
@@ -43,11 +50,44 @@ useEffect(() => {
         {notes.length === 0 && !isRateLimited && <NotesNotFound />}
 
         {notes.length > 0 && !isRateLimited && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {notes.map((note) => (
-              <NoteCard key={note._id} note={note} setNotes={setNotes} />
-            ))}
-          </div>
+          // <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          //   {notes.map((note) => (
+          //     <NoteCard key={note._id} note={note} setNotes={setNotes} />
+          //   ))}
+          // </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {notes.map((note) => (
+                  <NoteCard
+                    key={note._id}
+                    note={note}
+                    setNotes={setNotes}
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-wrap justify-center items-center gap-3 mt-8 px-2">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage((prev) => prev - 1)}
+                  className="px-3 sm:px-4 py-2 rounded bg-slate-900 text-white disabled:opacity-50"
+                >
+                  Previous
+                </button>
+
+                <span className="whitespace-nowrap">
+                  Page {page} of {totalPages}
+                </span>
+
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage((prev) => prev + 1)}
+                  className="px-3 sm:px-4 py-2 rounded bg-slate-900 text-white disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </>
         )}
       </div>
     </div>

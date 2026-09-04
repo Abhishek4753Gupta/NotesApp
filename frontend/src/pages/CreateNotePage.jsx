@@ -33,14 +33,14 @@ const CreateNotePage = () => {
         toast.error('Server connection failed. Is the backend running?');
         return;
       }
-      console.log("Error creating note", error);
+      console.log("Error creating note", error.response.status);
       if (error.response.status === 429) {
         toast.error("Slow down! You're creating notes too fast", {
           duration: 4000,
           icon: "💀",
         });
       } else {
-        toast.error("Failed to create note");
+        toast.error("Failed to create note "+error.response.data.message);
       }
     } finally {
       setLoading(false);
