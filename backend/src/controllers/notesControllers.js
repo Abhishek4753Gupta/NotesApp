@@ -10,17 +10,14 @@ export const getAllNotes = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    // Unique cache for each user's page
     const cacheKey = `notes:${userId}:page:${page}:limit:${limit}`;
 
-    // Check Redis first
     const cachedNotes = await redis.get(cacheKey);
 
     if (cachedNotes) {
       return res.status(200).json(cachedNotes);
     }
 
-    // Fetch from MongoDB
     const notes = await Note.find({
       user: userId,
     })
@@ -36,14 +33,10 @@ export const getAllNotes = async (req, res) => {
 
     const result = {
       notes,
-      currentPage: page,
       totalPages,
-      totalNotes,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
     };
 
-    // Cache for 60 seconds
+
     await redis.set(cacheKey, result, {
       ex: 60,
     });
@@ -88,7 +81,7 @@ export const createNotes = async (req, res) => {
 
     await note.save();
 
-    // Invalidate cached pages for this user
+
     const keys = await redis.keys(`notes:${req.user.id}:*`);
 
     if (keys.length > 0) {
@@ -124,7 +117,7 @@ export const updateNotes = async (req, res) => {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    // Invalidate cached pages for this user
+
     const keys = await redis.keys(`notes:${req.user.id}:*`);
 
     if (keys.length > 0) {
@@ -149,7 +142,7 @@ export const deleteNotes = async (req, res) => {
       return res.status(404).json({ message: "Note not found" });
     }
 
-    // Invalidate cached pages for this user
+   
     const keys = await redis.keys(`notes:${req.user.id}:*`);
 
     if (keys.length > 0) {
