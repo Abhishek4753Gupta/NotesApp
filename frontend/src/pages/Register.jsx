@@ -21,7 +21,7 @@ export default function Register() {
       });
       localStorage.setItem("notesToken", response.data.token);
       setToken(response.data.token);
-      nav("/");
+      nav("/", { replace: true });
     } catch (err) {
       toast.error(err.response.data.message);
     }

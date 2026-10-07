@@ -7,10 +7,11 @@ export const getAllNotes = async (req, res) => {
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 6;
-
     const skip = (page - 1) * limit;
 
-    const cacheKey = `notes:${userId}:page:${page}:limit:${limit}`;
+    const search = (req.query.search || "").trim();
+
+    const cacheKey = `notes:${userId}:search:${search.toLowerCase()}:page:${page}:limit:${limit}`;
 
     const cachedNotes = await redis.get(cacheKey);
 
@@ -18,30 +19,24 @@ export const getAllNotes = async (req, res) => {
       return res.status(200).json(cachedNotes);
     }
 
-    const notes = await Note.find({
-      user: userId,
-    })
+    const filter = { user: userId };
+    if (search) {
+      filter.title = { $regex: search , $options: "i" };
+    }
+    const notes = await Note.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalNotes = await Note.countDocuments({
-      user: userId,
-    });
-
+    const totalNotes = await Note.countDocuments(filter);
     const totalPages = Math.ceil(totalNotes / limit);
 
-    const result = {
-      notes,
-      totalPages,
-    };
+    const result = {notes,totalPages,};
 
-
-    await redis.set(cacheKey, result, {
-      ex: 60,
-    });
+    await redis.set(cacheKey, result, { ex: 60 });
 
     res.status(200).json(result);
+
   } catch (error) {
     console.error(error);
 

@@ -14,6 +14,11 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+const PublicRoute = ({ children }) => {
+  const { token } = useContext(AuthContext);
+  return token ? <Navigate to="/" replace /> : children;
+};
+
 const App = () => {
   
   return (
@@ -24,8 +29,8 @@ const App = () => {
         <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>}/>
         <Route path="/create" element={<ProtectedRoute><CreateNotePage /> </ProtectedRoute>} />
         <Route path="/notes/:id" element={<ProtectedRoute><NotesDetailPage /></ProtectedRoute>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       </Routes>
     </div>
   )

@@ -17,7 +17,7 @@ export default function Login() {
       localStorage.setItem("notesToken", response.data.token);
       //console.log(data);
       setToken(response.data.token);
-      nav("/");
+      nav("/", { replace: true });
     } catch (err) {
       toast.error(err.response.data.message);
     }
